@@ -33,6 +33,7 @@ export const getStorage = (storageKey: string) => {
 }
 
 export const STORAGE_KEY = {
-  RATIO: 'doctruyen@ratio',
-  THEME: 'doctruyen@theme'
+  TASKS: 'todoapp@tasks',
+  RATIO: 'todoapp@ratio',
+  THEME: 'todoapp@theme'
 }

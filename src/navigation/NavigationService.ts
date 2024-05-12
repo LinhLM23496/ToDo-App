@@ -4,10 +4,11 @@ import {
   createNavigationContainerRef
 } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { TaskType } from 'stores/tasks/types'
 
 export type RootStackParamList = {
   Home: undefined
-  CreateTask: undefined
+  CreateTask: { data?: TaskType }
 }
 
 export type ScreenProps<

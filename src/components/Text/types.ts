@@ -1,6 +1,4 @@
-import { ComponentClass, FunctionComponent } from 'react'
 import { StyleProp, TextProps, TextStyle } from 'react-native'
-import { AnimateProps } from 'react-native-reanimated'
 import { SizeType } from 'themes'
 
 export type TextType = 'title' | 'subTitle' | 'content'
@@ -19,9 +17,6 @@ export type FontWeight =
   | '900'
 
 export type TextPropsType = TextProps & {
-  Element?:
-    | FunctionComponent<TextProps>
-    | ComponentClass<AnimateProps<TextProps>, any>
   size?: SizeType
   fontWeight?: FontWeight
   ratio?: number
@@ -30,4 +25,10 @@ export type TextPropsType = TextProps & {
   color?: string
   style?: StyleProp<TextStyle>
   textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify'
+  flex?: number
+  textDecorationLine?:
+    | 'none'
+    | 'underline'
+    | 'line-through'
+    | 'underline line-through'
 }

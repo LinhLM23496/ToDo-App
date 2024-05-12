@@ -1,14 +1,13 @@
-import React, { FC, LegacyRef, forwardRef, useMemo } from 'react'
+import React, { LegacyRef, forwardRef, useMemo } from 'react'
 import { Text as RNText, StyleProp, TextStyle } from 'react-native'
 import { TextPropsType } from './types'
 import { color, fontSize as FontSize } from 'themes'
 import { useThemeStore } from 'stores'
 
-const Text: FC<TextPropsType> = forwardRef((props, ref?: LegacyRef<RNText>) => {
+const Text = forwardRef((props: TextPropsType, ref?: LegacyRef<RNText>) => {
   const { theme } = useThemeStore()
 
   const {
-    Element = RNText,
     children,
     fontWeight,
     type,
@@ -17,6 +16,8 @@ const Text: FC<TextPropsType> = forwardRef((props, ref?: LegacyRef<RNText>) => {
     ratio = 1,
     opacity = 1,
     style: styleContainer,
+    flex,
+    textDecorationLine,
     ...rest
   } = props
 
@@ -51,23 +52,24 @@ const Text: FC<TextPropsType> = forwardRef((props, ref?: LegacyRef<RNText>) => {
   }, [type, theme])
 
   return (
-    <Element
-      //@ts-ignore
+    <RNText
       ref={ref}
       {...rest}
       style={[
         {
+          flex: flex || undefined,
           fontSize: textSize,
           fontWeight,
           textAlign,
           opacity: type ? opacityType : opacity,
           color: props?.color || colorStyle,
-          lineHeight: lineHeight(textSize)
+          lineHeight: lineHeight(textSize),
+          textDecorationLine: textDecorationLine || 'none'
         },
         mergeStyles
       ]}>
       {children}
-    </Element>
+    </RNText>
   )
 })
 

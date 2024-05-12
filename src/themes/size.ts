@@ -6,8 +6,6 @@ const { width, height } = Dimensions.get('window')
 const baseRatioSize = 400
 const ratio = width / baseRatioSize
 
-const mSize = Math.round(20 * ratio)
-
 export const space = {
   width,
   height,
@@ -16,9 +14,10 @@ export const space = {
   xxs: Math.round(4 * ratio),
   xs: Math.round(8 * ratio),
   s: Math.round(12 * ratio),
-  m: mSize,
-  l: Math.round(24 * ratio),
-  xl: Math.round(32 * ratio)
+  m: Math.round(16 * ratio),
+  l: Math.round(20 * ratio),
+  xl: Math.round(24 * ratio),
+  xxl: Math.round(32 * ratio)
 }
 
 export const fontSize = {

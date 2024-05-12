@@ -1,9 +1,10 @@
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, TextInput, View } from 'react-native'
 import React, { forwardRef } from 'react'
-import { Icon, Row, Text } from 'components'
-import { color, colorRange, space } from 'themes'
+import { Row, Text } from 'components'
+import { color, colorRange, iconSize, space } from 'themes'
 import { InputProps, InputRef } from './types'
 import { useThemeStore } from 'stores'
+import { IconInformation } from 'assets'
 
 const Input = forwardRef((props: InputProps, ref: InputRef) => {
   const {
@@ -12,31 +13,18 @@ const Input = forwardRef((props: InputProps, ref: InputRef) => {
     labelStyle,
     contentStyle,
     style,
-    iconName,
-    iconSize,
-    iconColor,
     inputStyle,
     ElementLeft,
     ElementRight,
-    iconVariant,
     notice,
     noticeColor = color.danger,
     noticeStyle,
-    showClear,
-    onClear,
     maxLength,
     multiline,
     ...rest
   } = props
 
   const { theme } = useThemeStore()
-
-  const handleClear = () => {
-    if (ref && ref instanceof Object && 'current' in ref) {
-      ref?.current?.clear()
-      onClear?.()
-    }
-  }
 
   return (
     <View style={[styles.container, style]}>
@@ -58,17 +46,7 @@ const Input = forwardRef((props: InputProps, ref: InputRef) => {
           },
           contentStyle
         ]}>
-        {ElementLeft ? (
-          ElementLeft
-        ) : iconName ? (
-          <Icon
-            name={iconName}
-            size={iconSize}
-            color={iconColor}
-            variant={iconVariant}
-            style={{ marginTop: multiline ? space.xxs / 2 : 0 }}
-          />
-        ) : null}
+        {ElementLeft ? ElementLeft : null}
         <TextInput
           ref={ref}
           multiline={multiline}
@@ -82,19 +60,11 @@ const Input = forwardRef((props: InputProps, ref: InputRef) => {
             inputStyle
           ]}
         />
-        {showClear && props?.value?.length ? (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.iconRight}
-            onPress={handleClear}>
-            <Icon name={'close-circle'} color={colorRange.gray[700]} />
-          </TouchableOpacity>
-        ) : null}
         {ElementRight ? ElementRight : null}
       </Row>
       {notice ? (
         <Row gap={space.xxs}>
-          <Icon name="warning" size="s" color={color.danger} />
+          <IconInformation size={iconSize.s} color={color.danger} />
           <Text
             size="s"
             color={noticeColor}
