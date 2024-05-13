@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   notice: {
-    // marginLeft: space.s
+    marginLeft: space.s
   },
   iconRight: {
     paddingLeft: space.s

@@ -1,8 +1,11 @@
 import moment, { Moment } from 'moment'
 
 const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
+// ONCE
 const DATE_FORMAT = 'YYYY-MM-DD'
+// WEEKLY
 const DAY_OF_WEEK_FORMAT = 'dddd'
+// MONTHLY
 const DAY_FORMAT = 'DD'
 
 export const objectEmpty = (object: any) => {
@@ -17,7 +20,7 @@ export const formatDay = (time: string | Moment): string => {
 }
 
 export const formatDayOfWeek = (time: string | Moment): string => {
-  return moment(time).format(DAY_OF_WEEK_FORMAT)
+  return moment(time).locale('en').format(DAY_OF_WEEK_FORMAT)
 }
 
 export const formatDateTime = (time: string | Moment) => {
@@ -46,21 +49,6 @@ export const periodTime = (
   }
 
   return `${period} - ${total} phút`
-}
-
-export const generateTimeList = (): string[] => {
-  const timeList = []
-
-  const startTime = moment().startOf('day')
-  const endTime = moment().endOf('day').subtract(15, 'minutes')
-
-  while (startTime.isSameOrBefore(endTime)) {
-    timeList.push(nearestRoundedTime(startTime))
-
-    startTime.add(15, 'minutes')
-  }
-
-  return timeList
 }
 
 // Tính toán thời gian gần nhất trước hoặc sau để làm tròn

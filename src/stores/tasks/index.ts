@@ -3,6 +3,8 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { DailyTasksState, TasksState } from './types'
 import { formatDate, formatDay, formatDayOfWeek } from 'lib'
+import { useMemo } from 'react'
+import moment, { Moment } from 'moment'
 
 export const useOnceTasksStore = create<TasksState>()(
   persist(
@@ -110,7 +112,6 @@ export const useDailyTasksStore = create<DailyTasksState>()(
       },
       updateStatusTask(id, date, status) {
         set((state) => {
-          console.log('status', status)
           const tasks = state.tasks.map((item) => {
             if (item.id === id) {
               return {
@@ -140,3 +141,63 @@ export const useDailyTasksStore = create<DailyTasksState>()(
     }
   )
 )
+
+export const useTasks = (selectedDate: Moment) => {
+  const { tasks } = useOnceTasksStore()
+  const { tasks: dailyTasks } = useDailyTasksStore()
+
+  const dataTasks = useMemo(() => {
+    const formatDateSelected = formatDate(selectedDate)
+    const formatDayOfWeekSelected = formatDayOfWeek(selectedDate)
+    const formatDaySelected = formatDay(selectedDate)
+
+    const data = [
+      ...(tasks[formatDateSelected] ?? []),
+      ...(tasks[formatDayOfWeekSelected] ?? []),
+      ...(tasks[formatDaySelected] ?? []),
+      ...dailyTasks
+    ]
+    return data.sort((a, b) => {
+      return moment(a.startTime).diff(moment(b.startTime))
+    })
+  }, [tasks, dailyTasks, selectedDate])
+
+  return dataTasks
+}
+
+export const useMarkedDates = () => {
+  const { tasks } = useOnceTasksStore()
+  const { tasks: dailyTasks } = useDailyTasksStore()
+
+  const getTaskDots = (taskArray: any[]) => {
+    return taskArray.flatMap((item) => {
+      return item
+        ? [
+            {
+              color: item.color,
+              selectedColor: item.color
+            }
+          ]
+        : []
+    })
+  }
+
+  const markedDates = useMemo(() => {
+    return (date: Moment) => {
+      const formatDateSelected = formatDate(date)
+      const formatDayOfWeekSelected = formatDayOfWeek(date)
+      const formatDaySelected = formatDay(date)
+
+      const dots = [
+        ...getTaskDots(dailyTasks),
+        ...getTaskDots(tasks[formatDateSelected] || []),
+        ...getTaskDots(tasks[formatDayOfWeekSelected] || []),
+        ...getTaskDots(tasks[formatDaySelected] || [])
+      ]
+
+      return { dots }
+    }
+  }, [dailyTasks.length, tasks])
+
+  return markedDates
+}

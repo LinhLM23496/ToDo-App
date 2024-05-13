@@ -1,65 +1,36 @@
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import React, { FC, useState } from 'react'
+import { Button, Input, NavigationBar, Row, Text } from 'components'
+import { color, colorRange, space } from 'themes'
 import {
-  Button,
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View
-} from 'react-native'
-import React, { FC } from 'react'
-import { Input, NavigationBar, Text } from 'components'
-import { color, colorRange, iconSize, space } from 'themes'
-import {
+  COLORS,
+  DATA_REPEAT,
+  formatDate,
   formatDateTime,
-  formatTime,
-  generateTimeList,
   nearestRoundedTime,
   validateTitle
 } from 'lib'
-import ScrollPicker from 'react-native-wheel-scrollview-picker'
 import moment from 'moment'
 import { Controller, useForm } from 'react-hook-form'
-import {
-  DataRepeat,
-  IFormInput,
-  RenderColorType,
-  RenderRepeatType
-} from './types'
+import { IFormInput } from './types'
 import { useDailyTasksStore, useOnceTasksStore } from 'stores'
 import { NavigationService, ScreenProps } from 'navigation'
 import { TaskType } from 'stores/tasks/types'
-
-const DATA_REPEAT: DataRepeat[] = [
-  { value: 'once', label: 'Một lần' },
-  { value: 'daily', label: 'Hàng ngày' },
-  { value: 'weekly', label: 'Hàng tuần' },
-  { value: 'monthly', label: 'Hàng tháng' }
-]
-
-const COLORS = [
-  '#CD3645',
-  '#3369C4',
-  '#CE9F40',
-  '#678983',
-  '#3F979B',
-  '#6F1AB6'
-]
+import CardPicker from './components/CardPicker'
+import SelectColor from './components/SelectColor'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import SelectRepeat from './components/SelectRepeat'
+import DatePicker from 'react-native-date-picker'
 
 const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
+  const { bottom } = useSafeAreaInsets()
   const data = route.params?.data
-  const dataList = generateTimeList()
   const innitialStartTime = data?.startTime
     ? formatDateTime(data?.startTime)
     : nearestRoundedTime(moment())
   const innitialEndTime = data?.endTime
     ? formatDateTime(data?.endTime)
     : nearestRoundedTime(moment().add(15, 'minutes'))
-  const selectedIndexStart = dataList.findIndex(
-    (item) => item === innitialStartTime
-  )
-  const selectedIndexEnd = dataList.findIndex(
-    (item) => item === innitialEndTime
-  )
 
   const {
     setTask: setOnceTask,
@@ -73,6 +44,9 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   const {
     control,
     handleSubmit,
+    watch,
+    getValues,
+    setValue,
     formState: { errors }
   } = useForm<IFormInput>({
     defaultValues: {
@@ -86,58 +60,37 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
     }
   })
 
-  const renderColor = ({ item, value, onChange }: RenderColorType) => {
-    const isActive = item === value
+  const startTime = watch('startTime')
 
-    const handleSelect = () => {
-      onChange(item)
-    }
-    return (
-      <TouchableOpacity
-        onPress={handleSelect}
-        activeOpacity={0.8}
-        key={item}
-        style={styles.itemColor}>
-        <View
-          style={[
-            styles.subItemColor,
-            {
-              borderColor: isActive ? item : color.transparent
-            }
-          ]}>
-          <View
-            style={[
-              styles.color,
-              {
-                backgroundColor: item
-              }
-            ]}
-          />
-        </View>
-      </TouchableOpacity>
-    )
+  const [open, setOpen] = useState(false)
+
+  const onConfirm = (date: Date) => {
+    const newDate = moment(date.toISOString())
+    const start = moment(getValues('startTime'))
+    const end = moment(getValues('endTime'))
+
+    // update start and end date
+    start.set({
+      year: newDate.year(),
+      month: newDate.month(),
+      date: newDate.date()
+    })
+    end.set({
+      year: newDate.year(),
+      month: newDate.month(),
+      date: newDate.date()
+    })
+
+    setValue('startTime', formatDateTime(start))
+    setValue('endTime', formatDateTime(end))
+    setOpen(false)
   }
 
-  const renderRepeat = ({ item, value, onChange }: RenderRepeatType) => {
-    const isActive = item.value === value.value
-
-    const handleSelect = () => {
-      onChange(item)
-    }
-    return (
-      <TouchableOpacity
-        key={item.value}
-        activeOpacity={0.8}
-        onPress={handleSelect}
-        style={[
-          styles.itemRepeat,
-          { backgroundColor: isActive ? color.info : color.transparent }
-        ]}>
-        <Text fontWeight="500" color={isActive ? color.white : color.black}>
-          {item.label}
-        </Text>
-      </TouchableOpacity>
-    )
+  const handleShow = () => {
+    setOpen(true)
+  }
+  const handleCancel = () => {
+    setOpen(false)
   }
 
   const onSubmit = (dataForm: IFormInput) => {
@@ -174,10 +127,7 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   return (
     <View style={styles.container}>
       <NavigationBar title={data?.id ? 'Chỉnh sửa tác vụ' : 'Tác vụ mới'} />
-      <ScrollView
-        keyboardDismissMode="on-drag"
-        style={styles.scroll}
-        contentContainerStyle={styles.subList}>
+      <View style={styles.body}>
         <Controller
           name="title"
           control={control}
@@ -194,102 +144,83 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
             />
           )}
         />
-        <Controller
-          name="startTime"
-          control={control}
-          render={({ field: { onChange } }) => (
-            <View>
-              <Text style={styles.title}>Bắt đầu khi nào?</Text>
-              <View style={styles.border}>
-                <ScrollPicker
-                  dataSource={dataList}
-                  selectedIndex={selectedIndexStart}
-                  renderItem={(valuePicker, index) => {
-                    return (
-                      <View key={`picker-${index}`}>
-                        <Text>{formatTime(valuePicker)}</Text>
-                      </View>
-                    )
-                  }}
-                  onValueChange={(valuePicker) => onChange(valuePicker)}
-                  wrapperHeight={iconSize['3xl'] * 3}
-                  wrapperBackground={colorRange.gray[100]}
-                  itemHeight={iconSize['3xl']}
-                  highlightColor={color.white}
-                  highlightBorderWidth={1}
-                />
-              </View>
-            </View>
-          )}
-        />
-        <Controller
-          name="endTime"
-          control={control}
-          render={({ field: { onChange } }) => (
-            <View>
-              <Text style={styles.title}>Bao lâu?</Text>
-              <View style={styles.border}>
-                <ScrollPicker
-                  dataSource={dataList}
-                  selectedIndex={selectedIndexEnd}
-                  renderItem={(valuePicker, index) => {
-                    return (
-                      <View key={`picker-${index}`}>
-                        <Text>{formatTime(valuePicker)}</Text>
-                      </View>
-                    )
-                  }}
-                  onValueChange={(valuePicker) => onChange(valuePicker)}
-                  wrapperHeight={iconSize['3xl'] * 3}
-                  wrapperBackground={colorRange.gray[100]}
-                  itemHeight={iconSize['3xl']}
-                  highlightColor={color.white}
-                  highlightBorderWidth={1}
-                />
-              </View>
-            </View>
-          )}
-        />
+        <View>
+          <Text style={styles.title}>Thời gian tác vụ</Text>
+          <View style={styles.containerTime}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleShow}
+              style={styles.date}>
+              <Text
+                textAlign="center"
+                fontWeight="bold"
+                size="l"
+                color={color.info}>
+                {formatDate(startTime)}
+              </Text>
+            </TouchableOpacity>
+            <Row>
+              <Controller
+                name="startTime"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <CardPicker onChange={onChange} value={value} />
+                )}
+              />
+              <View style={styles.dashed} />
+              <Controller
+                name="endTime"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <CardPicker
+                    onChange={onChange}
+                    value={value}
+                    minimumDate={new Date(startTime)}
+                  />
+                )}
+              />
+            </Row>
+          </View>
+        </View>
         <Controller
           name="color"
           control={control}
           render={({ field: { onChange, value } }) => (
-            <View>
-              <Text style={styles.title}>Màu gì?</Text>
-              <FlatList
-                scrollEnabled={false}
-                horizontal
-                data={COLORS}
-                renderItem={({ item }) =>
-                  renderColor({ item, value, onChange })
-                }
-                style={styles.containerColor}
-                contentContainerStyle={styles.subContainerColor}
-              />
-            </View>
+            <SelectColor value={value} onChange={onChange} />
           )}
         />
         <Controller
           name="repeat"
           control={control}
           render={({ field: { onChange, value } }) => (
-            <View>
-              <Text style={styles.title}>Thường xuyên thế nào?</Text>
-              <FlatList
-                scrollEnabled={false}
-                horizontal
-                data={DATA_REPEAT}
-                renderItem={({ item }) =>
-                  renderRepeat({ item, value, onChange })
-                }
-                style={styles.repeat}
-                contentContainerStyle={styles.subRepeat}
-              />
-            </View>
+            <SelectRepeat value={value} onChange={onChange} />
           )}
         />
-      </ScrollView>
-      <Button title="Lưu" onPress={handleSubmit(onSubmit)} />
+      </View>
+
+      <DatePicker
+        modal
+        mode="date"
+        locale="vi-VN"
+        open={open}
+        date={new Date(startTime)}
+        onConfirm={onConfirm}
+        onCancel={handleCancel}
+        title={'Chọn giờ'}
+        confirmText="Chọn"
+        cancelText="Hủy"
+      />
+      <Button
+        title="Lưu"
+        onPress={handleSubmit(onSubmit)}
+        style={[
+          styles.button,
+          {
+            marginBottom: bottom + space.m
+          }
+        ]}
+        styleContent={styles.subButton}
+      />
     </View>
   )
 }
@@ -300,10 +231,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1
   },
-  scroll: {
-    marginHorizontal: space.m
-  },
-  subList: {
+  body: {
+    flex: 1,
+    marginHorizontal: space.m,
     gap: space.m
   },
   title: {
@@ -311,45 +241,31 @@ const styles = StyleSheet.create({
     marginLeft: space.s,
     marginBottom: space.xxs
   },
-  subContainerColor: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: space.m
-  },
-  containerColor: {
-    flex: 1,
-    borderRadius: space.xs,
-    backgroundColor: colorRange.gray[100]
-  },
-  itemColor: {
-    paddingVertical: space.xs
-  },
-  subItemColor: {
-    borderRadius: 100,
-    borderWidth: 2
-  },
-  color: {
-    width: iconSize.s,
-    height: 'auto',
-    aspectRatio: 1,
-    borderRadius: 100,
-    margin: 2
-  },
-  repeat: {
-    borderRadius: space.xs,
-    backgroundColor: colorRange.gray[100]
-  },
-  subRepeat: {
-    flex: 1,
-    justifyContent: 'space-between'
-  },
-  itemRepeat: {
-    padding: space.s,
-    borderRadius: space.xs,
-    backgroundColor: colorRange.info[100]
-  },
   border: {
     borderRadius: space.xs,
     overflow: 'hidden'
+  },
+  containerTime: {
+    backgroundColor: colorRange.gray[100],
+    borderRadius: space.xs,
+    paddingVertical: space.m,
+    paddingHorizontal: space.xxl
+  },
+  date: {
+    alignSelf: 'center',
+    paddingHorizontal: space.l,
+    paddingVertical: space.xs
+  },
+  dashed: {
+    flex: 1,
+    marginHorizontal: space.xs,
+    borderWidth: 1,
+    borderStyle: 'dashed'
+  },
+  button: {
+    marginHorizontal: space.m
+  },
+  subButton: {
+    flex: 1
   }
 })

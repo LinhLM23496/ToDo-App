@@ -1,7 +1,3 @@
-import {
-  IconVariant,
-  IconName as IconNameType
-} from 'components/Icon/IconValue'
 import { ReactNode, Ref } from 'react'
 import {
   StyleProp,
@@ -17,7 +13,6 @@ export type InputRef = Ref<TextInput>
 
 export type InputProps = TextInputProps & {
   label?: string
-  iconName?: IconNameType
   labelProps?: TextProps
   labelStyle?: StyleProp<TextStyle>
   contentStyle?: ViewStyle
@@ -25,7 +20,6 @@ export type InputProps = TextInputProps & {
   inputStyle?: ViewStyle
   iconColor?: string
   iconSize?: SizeType
-  iconVariant?: IconVariant
   notice?: string
   noticeColor?: string
   noticeStyle?: TextStyle

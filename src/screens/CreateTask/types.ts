@@ -12,15 +12,3 @@ export type IFormInput = {
   color: string
   repeat: DataRepeat
 }
-
-export type RenderColorType = {
-  item: string
-  value: string
-  onChange: (value: string) => void
-}
-
-export type RenderRepeatType = {
-  item: DataRepeat
-  value: DataRepeat
-  onChange: (value: DataRepeat) => void
-}
