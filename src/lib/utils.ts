@@ -1,6 +1,9 @@
 import moment, { Moment } from 'moment'
 
-const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
+const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
+const DATE_FORMAT = 'YYYY-MM-DD'
+const DAY_OF_WEEK_FORMAT = 'dddd'
+const DAY_FORMAT = 'DD'
 
 export const objectEmpty = (object: any) => {
   if (!object) return true
@@ -9,19 +12,30 @@ export const objectEmpty = (object: any) => {
   return false
 }
 
-export const formatDateTime = (time: string) => {
-  return moment(time).format(TIME_FORMAT)
+export const formatDay = (time: string | Moment): string => {
+  return moment(time).format(DAY_FORMAT)
 }
 
-export const formatDate = (time: string) => {
-  return moment(time).format('YYYY-MM-DD')
+export const formatDayOfWeek = (time: string | Moment): string => {
+  return moment(time).format(DAY_OF_WEEK_FORMAT)
 }
 
-export const formatTime = (time: string) => {
+export const formatDateTime = (time: string | Moment) => {
+  return moment(time).format(DATE_TIME_FORMAT)
+}
+
+export const formatDate = (time: string | Moment) => {
+  return moment(time).format(DATE_FORMAT)
+}
+
+export const formatTime = (time: string | Moment) => {
   return moment(time).format('HH:mm')
 }
 
-export const periodTime = (startTime: string, endTime: string) => {
+export const periodTime = (
+  startTime: string | Moment,
+  endTime: string | Moment
+) => {
   const period = `${formatTime(startTime)} - ${formatTime(endTime)}`
   const total = moment(endTime).diff(moment(startTime), 'minutes')
 
@@ -57,5 +71,5 @@ export const nearestRoundedTime = (time: Moment): string => {
     .startOf('hour')
     .add(Math.round(time.minutes() / 15) * 15, 'minutes')
   const resTime = remainder < 7.5 ? roundedTime.add(15, 'minutes') : roundedTime
-  return resTime.format(TIME_FORMAT).toString()
+  return resTime.format(DATE_TIME_FORMAT).toString()
 }

@@ -4,10 +4,10 @@ import ReactNativeCalendarStrip from 'react-native-calendar-strip'
 import moment from 'moment'
 import { space } from 'themes'
 import { Text } from 'components'
-import { formatDate } from 'lib'
+import { formatDate, formatDay, formatDayOfWeek } from 'lib'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NavigationService, Route } from 'navigation'
-import { useTasksStore } from 'stores'
+import { useDailyTasksStore, useOnceTasksStore } from 'stores'
 import { TaskType } from 'stores/tasks/types'
 import TaskCard from './components/TaskCard'
 
@@ -15,18 +15,59 @@ moment.locale('vi')
 
 const Home = () => {
   const { top, bottom } = useSafeAreaInsets()
-  const { tasks } = useTasksStore()
-  const [selectedDate, setSelectedDate] = useState(moment())
-  const dataTasks = useMemo(() => {
-    const data = [...(tasks[formatDate(selectedDate.toString())] ?? [])]
+  const { tasks, removeTask, updateStatusTask } = useOnceTasksStore()
+  const {
+    tasks: dailyTasks,
+    removeTask: removeDailyTask,
+    updateStatusTask: updateStatusDailyTask
+  } = useDailyTasksStore()
 
+  const [selectedDate, setSelectedDate] = useState(moment())
+  const formatDateSelected = formatDate(selectedDate)
+  const dataTasks = useMemo(() => {
+    const formatDayOfWeekSelected = formatDayOfWeek(selectedDate)
+    const formatDaySelected = formatDay(selectedDate)
+    const data = [
+      ...(tasks[formatDateSelected] ?? []),
+      ...(tasks[formatDayOfWeekSelected] ?? []),
+      ...(tasks[formatDaySelected] ?? []),
+      ...dailyTasks
+    ]
     return data.sort((a, b) => {
       return moment(a.startTime).diff(moment(b.startTime))
     })
-  }, [tasks, selectedDate])
+  }, [tasks, dailyTasks, selectedDate])
 
   const renderItem = ({ item }: { item: TaskType }) => {
-    return <TaskCard key={item.id} data={item} />
+    const { id, repeat } = item
+    const handleUpdate = () => {
+      NavigationService.push(Route.CreateTask, { data: item })
+    }
+
+    const handleRemove = () => {
+      if (repeat === 'daily') {
+        return removeDailyTask(id)
+      }
+      return removeTask(id)
+    }
+
+    const handleUpdateStatus = (status: boolean) => {
+      if (repeat === 'daily') {
+        return updateStatusDailyTask(id, formatDateSelected, status)
+      }
+      return updateStatusTask(id, formatDateSelected, status)
+    }
+
+    return (
+      <TaskCard
+        key={id}
+        data={item}
+        selectedDate={formatDateSelected}
+        onUpdate={handleUpdate}
+        onRemove={handleRemove}
+        onUpdateStatus={handleUpdateStatus}
+      />
+    )
   }
   return (
     <View style={[styles.container, { paddingTop: top }]}>

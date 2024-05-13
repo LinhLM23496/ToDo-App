@@ -1,5 +1,7 @@
+import { RepeatType } from 'stores/tasks/types'
+
 export type DataRepeat = {
-  value: string
+  value: RepeatType
   label: string
 }
 

@@ -5,17 +5,19 @@ import { color, iconSize, space } from 'themes'
 import { IconArrowLeft, IconTick } from 'assets'
 import { formatTime, periodTime } from 'lib'
 import { Text } from 'components'
-import { useTasksStore } from 'stores'
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { NavigationService, Route } from 'navigation'
 
 type Props = {
   data: TaskType
+  selectedDate: string
+  onUpdate: () => void
+  onRemove: () => void
+  onUpdateStatus: (status: boolean) => void
 }
 
 type TickBoxProps = {
@@ -33,10 +35,16 @@ const DATA_OPTIONS = [
   { label: 'Delete', icon: 'delete' }
 ]
 
-const TaskCard = ({ data }: Props) => {
-  const { id, title, startTime, endTime, color: colorIcon, isFinished } = data
+const TaskCard = ({
+  data,
+  selectedDate,
+  onUpdate,
+  onUpdateStatus,
+  onRemove
+}: Props) => {
+  const { title, startTime, endTime, color: colorIcon, finishTimes } = data
+  const isFinished = !!finishTimes?.includes(selectedDate)
   const { bottom } = useSafeAreaInsets()
-  const { updateStatusTask, removeTask } = useTasksStore()
   const bottomSheetRef = useRef<BottomSheetModal>(null)
 
   const handleOptions = () => {
@@ -51,7 +59,7 @@ const TaskCard = ({ data }: Props) => {
       },
       {
         text: 'Xóa',
-        onPress: () => removeTask(id)
+        onPress: onRemove
       }
     ])
   }
@@ -64,9 +72,8 @@ const TaskCard = ({ data }: Props) => {
       if (label === 'Delete') {
         return onConfirm()
       }
-      if (label === 'Edit') {
-        return NavigationService.navigate(Route.CreateTask, { data })
-      }
+
+      return onUpdate()
     }
 
     return (
@@ -115,7 +122,7 @@ const TaskCard = ({ data }: Props) => {
       </View>
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => updateStatusTask(id)}
+        onPress={() => onUpdateStatus(isFinished)}
         style={styles.containerTick}>
         <TickBox isActive={isFinished} colorIcon={colorIcon} />
       </TouchableOpacity>

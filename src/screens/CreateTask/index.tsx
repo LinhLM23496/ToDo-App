@@ -25,8 +25,9 @@ import {
   RenderColorType,
   RenderRepeatType
 } from './types'
-import { useTasksStore } from 'stores'
+import { useDailyTasksStore, useOnceTasksStore } from 'stores'
 import { NavigationService, ScreenProps } from 'navigation'
+import { TaskType } from 'stores/tasks/types'
 
 const DATA_REPEAT: DataRepeat[] = [
   { value: 'once', label: 'Một lần' },
@@ -60,7 +61,14 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
     (item) => item === innitialEndTime
   )
 
-  const { setTask, updateTask } = useTasksStore()
+  const {
+    setTask: setOnceTask,
+    setWeeklyTask,
+    setMonthlyTask,
+    updateTask
+  } = useOnceTasksStore()
+  const { setTask: setDailyTask, updateTask: updateDailyTask } =
+    useDailyTasksStore()
 
   const {
     control,
@@ -133,15 +141,33 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   }
 
   const onSubmit = (dataForm: IFormInput) => {
-    const dataTask = {
+    const dataTask: TaskType = {
       ...data,
       ...dataForm,
       id: data?.id ?? moment().valueOf().toString(),
       repeat: dataForm.repeat.value,
       icon: 'work',
-      isFinished: data?.isFinished ?? false
+      finishTimes: data?.finishTimes ?? []
     }
-    data?.id ? updateTask(dataTask) : setTask(dataTask)
+
+    switch (dataForm.repeat.value) {
+      case 'daily':
+        data?.id ? updateDailyTask(dataTask) : setDailyTask(dataTask)
+        break
+
+      case 'weekly':
+        data?.id ? updateTask(dataTask) : setWeeklyTask(dataTask)
+        break
+
+      case 'monthly':
+        data?.id ? updateTask(dataTask) : setMonthlyTask(dataTask)
+        break
+
+      default:
+        data?.id ? updateTask(dataTask) : setOnceTask(dataTask)
+        break
+    }
+
     NavigationService.goBack()
   }
 

@@ -33,7 +33,10 @@ export const getStorage = (storageKey: string) => {
 }
 
 export const STORAGE_KEY = {
-  TASKS: 'todoapp@tasks',
+  ONCETASKS: 'todoapp@once-tasks',
+  DAILYTASKS: 'todoapp@daily-tasks',
+  WEEKLYTASKS: 'todoapp@weekly-tasks',
+  MONTHLYTASKS: 'todoapp@monthly-tasks',
   RATIO: 'todoapp@ratio',
   THEME: 'todoapp@theme'
 }
