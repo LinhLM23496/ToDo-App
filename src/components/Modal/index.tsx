@@ -2,8 +2,7 @@ import {
   StyleSheet,
   View,
   Modal as RNModal,
-  TouchableWithoutFeedback,
-  Pressable
+  TouchableWithoutFeedback
 } from 'react-native'
 import React, {
   ReactNode,

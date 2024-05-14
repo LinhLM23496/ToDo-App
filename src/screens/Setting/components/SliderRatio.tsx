@@ -1,19 +1,23 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { Ref, forwardRef, useImperativeHandle, useState } from 'react'
 import { IconRatio, IconRepeat } from 'assets'
 import { Row, Text } from 'components'
 import Slider from '@react-native-community/slider'
 import { useRatioStore, useThemeStore } from 'stores'
 import { color, colorRange, iconSize, space } from 'themes'
+import { Props, SliderRatioRef } from './types'
 
-type Props = {
-  onFinishChange: (value: number) => void
-}
-
-const SliderRatio = ({ onFinishChange }: Props) => {
+const SliderRatio = ({ onFinishChange }: Props, ref: Ref<SliderRatioRef>) => {
   const { ratio } = useRatioStore()
   const { theme } = useThemeStore()
   const [data, setData] = useState(ratio)
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      setData(1)
+      onFinishChange(1)
+    }
+  }))
 
   const onSlidingComplete = (value: number) => {
     setData(value)
@@ -57,7 +61,7 @@ const SliderRatio = ({ onFinishChange }: Props) => {
   )
 }
 
-export default SliderRatio
+export default forwardRef(SliderRatio)
 
 const styles = StyleSheet.create({
   container: {

@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
-import React from 'react'
+import React, { useRef } from 'react'
 import { NavigationBar, Row, Text } from 'components'
 import SelectColor from 'components/SelectColor'
 import { color, colorRange, space } from 'themes'
@@ -15,6 +15,7 @@ import { COLORS_THEME } from 'lib'
 import { IconDelete, IconLanguage, IconNoti, IconTheme } from 'assets'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import SliderRatio from './components/SliderRatio'
+import { SliderRatioRef } from './components/types'
 
 type Option = {
   key: string
@@ -24,6 +25,7 @@ type Option = {
 }
 const Setting = () => {
   const { bottom } = useSafeAreaInsets()
+  const sliderRef = useRef<SliderRatioRef>(null)
   const { theme, setTheme, clearTheme } = useThemeStore()
   const { cleanTasks } = useTasksStore()
   const { setRatio, clearRatio } = useRatioStore()
@@ -84,6 +86,7 @@ const Setting = () => {
     cleanTasks()
     clearTheme()
     clearRatio()
+    sliderRef.current?.reset()
   }
 
   return (
@@ -103,7 +106,7 @@ const Setting = () => {
           style={styles.optionTheme}
         />
 
-        <SliderRatio onFinishChange={setRatio} />
+        <SliderRatio ref={sliderRef} onFinishChange={setRatio} />
         <FlatList
           scrollEnabled={false}
           data={OPTIONS}
