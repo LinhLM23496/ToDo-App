@@ -1,16 +1,12 @@
 import React, { LegacyRef, forwardRef, useMemo } from 'react'
 import { Text as RNText, StyleProp, TextStyle } from 'react-native'
 import { TextPropsType } from './types'
-import { color, fontSize as FontSize } from 'themes'
-import { useThemeStore } from 'stores'
+import { fontSize as FontSize } from 'themes'
 
 const Text = forwardRef((props: TextPropsType, ref?: LegacyRef<RNText>) => {
-  const { theme } = useThemeStore()
-
   const {
     children,
     fontWeight,
-    type,
     textAlign,
     size,
     ratio = 1,
@@ -36,20 +32,6 @@ const Text = forwardRef((props: TextPropsType, ref?: LegacyRef<RNText>) => {
   }, [styleContainer])
 
   const textSize = (mergeStyles?.fontSize || FontSize?.[size ?? 'm']) * ratio
-  const colorStyle = theme === 'dark' ? color.white : color.black
-
-  const opacityType = useMemo(() => {
-    switch (type) {
-      case 'title':
-        return theme === 'dark' ? 0.9 : 1
-      case 'subTitle':
-        return theme === 'dark' ? 0.7 : 0.9
-      case 'content':
-        return theme === 'dark' ? 0.6 : 0.8
-      default:
-        return 1
-    }
-  }, [type, theme])
 
   return (
     <RNText
@@ -61,8 +43,8 @@ const Text = forwardRef((props: TextPropsType, ref?: LegacyRef<RNText>) => {
           fontSize: textSize,
           fontWeight,
           textAlign,
-          opacity: type ? opacityType : opacity,
-          color: props?.color || colorStyle,
+          opacity,
+          color: props?.color,
           lineHeight: lineHeight(textSize),
           textDecorationLine: textDecorationLine || 'none'
         },

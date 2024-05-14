@@ -63,7 +63,7 @@ const Input = forwardRef((props: InputProps, ref: InputRef) => {
         {ElementRight ? ElementRight : null}
       </Row>
       {notice ? (
-        <Row gap={space.xxs}>
+        <Row gap={'xxs'}>
           <IconInformation size={iconSize.s} color={color.danger} />
           <Text
             size="s"

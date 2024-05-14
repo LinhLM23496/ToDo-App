@@ -1,4 +1,4 @@
-import { RepeatType } from 'stores/tasks/types'
+import { IconType, RepeatType } from 'stores/tasks/types'
 
 export type DataRepeat = {
   value: RepeatType
@@ -11,4 +11,5 @@ export type IFormInput = {
   endTime: string
   color: string
   repeat: DataRepeat
+  icon: IconType
 }

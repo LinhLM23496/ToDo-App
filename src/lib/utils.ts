@@ -61,3 +61,10 @@ export const nearestRoundedTime = (time: Moment): string => {
   const resTime = remainder < 7.5 ? roundedTime.add(15, 'minutes') : roundedTime
   return resTime.format(DATE_TIME_FORMAT).toString()
 }
+
+export const generateUniqueId = () => {
+  const currentTime = moment().valueOf()
+  const randomNum = Math.floor(Math.random() * 10000)
+  const id = `${currentTime}${randomNum}`
+  return id
+}

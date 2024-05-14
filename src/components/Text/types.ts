@@ -1,8 +1,6 @@
 import { StyleProp, TextProps, TextStyle } from 'react-native'
 import { SizeType } from 'themes'
 
-export type TextType = 'title' | 'subTitle' | 'content'
-
 export type FontWeight =
   | 'normal'
   | 'bold'
@@ -21,7 +19,6 @@ export type TextPropsType = TextProps & {
   fontWeight?: FontWeight
   ratio?: number
   opacity?: number
-  type?: TextType
   color?: string
   style?: StyleProp<TextStyle>
   textAlign?: 'auto' | 'left' | 'right' | 'center' | 'justify'

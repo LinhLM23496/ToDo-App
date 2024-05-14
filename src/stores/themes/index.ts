@@ -1,7 +1,8 @@
 import { STORAGE_KEY, Storage } from 'stores/storage'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { SizeState, ThemeState, ThemeSwitchType, ThemeType } from './types'
+import { SizeState, ThemeState } from './types'
+import { COLORS_THEME } from 'lib'
 
 const initialRatio = {
   ratio: 1
@@ -11,7 +12,8 @@ export const useRatioStore = create<SizeState>()(
   persist(
     (set) => ({
       ...initialRatio,
-      setRatio: (number) => set({ ratio: number })
+      setRatio: (number) => set({ ratio: number }),
+      clearRatio: () => set({ ratio: initialRatio.ratio })
     }),
     {
       name: STORAGE_KEY.RATIO,
@@ -21,8 +23,7 @@ export const useRatioStore = create<SizeState>()(
 )
 
 const initialTheme = {
-  theme: 'light' as ThemeType,
-  themeSwitch: 'light' as ThemeSwitchType
+  theme: COLORS_THEME[0]
 }
 
 export const useThemeStore = create<ThemeState>()(
@@ -30,7 +31,7 @@ export const useThemeStore = create<ThemeState>()(
     (set) => ({
       ...initialTheme,
       setTheme: (value) => set({ theme: value }),
-      setThemeSwitch: (value) => set({ themeSwitch: value })
+      clearTheme: () => set({ theme: initialTheme.theme })
     }),
     {
       name: STORAGE_KEY.THEME,

@@ -1,20 +1,25 @@
 import {
   FlatList,
+  StyleProp,
   StyleSheet,
-  Text,
   TouchableOpacity,
-  View
+  View,
+  ViewStyle
 } from 'react-native'
-import React from 'react'
+import React, { ReactNode } from 'react'
 import { color, colorRange, iconSize, space } from 'themes'
 import { COLORS } from 'lib'
+import { Text } from 'components'
 
 type Props = {
+  Label?: ReactNode
+  data?: string[]
   value: string
   onChange: (value: string) => void
+  style?: StyleProp<ViewStyle>
 }
 
-const SelectColor = ({ value, onChange }: Props) => {
+const SelectColor = ({ Label, data, value, onChange, style }: Props) => {
   const renderColor = ({ item }: { item: string }) => {
     const isActive = item === value
 
@@ -48,15 +53,16 @@ const SelectColor = ({ value, onChange }: Props) => {
   }
   return (
     <View>
-      <Text style={styles.title}>Màu gì?</Text>
+      <View style={styles.title}>
+        {Label || <Text fontWeight="bold">Màu gì?</Text>}
+      </View>
       <FlatList
         scrollEnabled={false}
         horizontal
-        data={COLORS}
+        data={data ?? COLORS}
         renderItem={renderColor}
-        style={styles.containerColor}
+        style={[styles.containerColor, style]}
         contentContainerStyle={styles.subContainerColor}
-        ListEmptyComponent={<Text>Không có màu</Text>}
       />
     </View>
   )
@@ -66,7 +72,6 @@ export default SelectColor
 
 const styles = StyleSheet.create({
   title: {
-    fontWeight: 'bold',
     marginLeft: space.s,
     marginBottom: space.xxs
   },

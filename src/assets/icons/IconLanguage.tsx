@@ -7,7 +7,7 @@ type Props = {
   color?: string
 }
 
-const IconRepeat = ({ size = iconSize.m, color = '#292D32' }: Props) => {
+const IconLanguage = ({ size = iconSize.m, color = '#292D32' }: Props) => {
   return (
     <Svg height={size} width={size} viewBox="0 0 24 24" fill="none">
       <G clip-path="url(#clip0_1_13152)">
@@ -25,4 +25,4 @@ const IconRepeat = ({ size = iconSize.m, color = '#292D32' }: Props) => {
   )
 }
 
-export default IconRepeat
+export default IconLanguage

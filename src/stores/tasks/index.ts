@@ -1,96 +1,12 @@
 import { STORAGE_KEY, Storage } from 'stores/storage'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { DailyTasksState, TasksState } from './types'
+import { TasksState } from './types'
 import { formatDate, formatDay, formatDayOfWeek } from 'lib'
 import { useMemo } from 'react'
 import moment, { Moment } from 'moment'
 
-export const useOnceTasksStore = create<TasksState>()(
-  persist(
-    (set) => ({
-      tasks: {},
-      setTask(value) {
-        const key = formatDate(value.startTime)
-        set((state) => ({
-          tasks: {
-            ...state.tasks,
-            [key]: [value, ...(state.tasks[key] ?? [])]
-          }
-        }))
-      },
-      setWeeklyTask(value) {
-        const key = formatDayOfWeek(value.startTime)
-        set((state) => ({
-          tasks: {
-            ...state.tasks,
-            [key]: [value, ...(state.tasks[key] ?? [])]
-          }
-        }))
-      },
-      setMonthlyTask(value) {
-        const key = formatDay(value.startTime)
-        set((state) => ({
-          tasks: {
-            ...state.tasks,
-            [key]: [value, ...(state.tasks[key] ?? [])]
-          }
-        }))
-      },
-      updateTask(value) {
-        set((state) => {
-          const tasks = { ...state.tasks }
-          for (const key in tasks) {
-            tasks[key] = tasks[key].map((item) => {
-              if (item.id === value.id) {
-                return value
-              }
-              return item
-            })
-          }
-          return { tasks }
-        })
-      },
-      updateStatusTask(id, date, status) {
-        set((state) => {
-          const tasks = { ...state.tasks }
-          for (const key in tasks) {
-            tasks[key] = tasks[key].map((item) => {
-              if (item.id === id) {
-                return {
-                  ...item,
-                  finishTimes: status
-                    ? item.finishTimes?.filter((i) => i !== date)
-                    : [...item.finishTimes, date]
-                }
-              }
-              return item
-            })
-          }
-          return { tasks }
-        })
-      },
-      removeTask(id) {
-        set((state) => {
-          const tasks = { ...state.tasks }
-          for (const key in tasks) {
-            tasks[key] = tasks[key].filter((item) => item.id !== id)
-          }
-          return { tasks }
-        })
-      },
-      cleanTasks() {
-        set({ tasks: {} })
-      }
-    }),
-    {
-      name: STORAGE_KEY.ONCETASKS,
-      storage: createJSONStorage(() => Storage)
-    }
-  )
-)
-
-export const useDailyTasksStore = create<DailyTasksState>()(
+export const useTasksStore = create<TasksState>()(
   persist(
     (set) => ({
       tasks: [],
@@ -136,68 +52,78 @@ export const useDailyTasksStore = create<DailyTasksState>()(
       }
     }),
     {
-      name: STORAGE_KEY.DAILYTASKS,
+      name: STORAGE_KEY.TASKS,
       storage: createJSONStorage(() => Storage)
     }
   )
 )
 
 export const useTasks = (selectedDate: Moment) => {
-  const { tasks } = useOnceTasksStore()
-  const { tasks: dailyTasks } = useDailyTasksStore()
+  const { tasks } = useTasksStore()
 
   const dataTasks = useMemo(() => {
     const formatDateSelected = formatDate(selectedDate)
     const formatDayOfWeekSelected = formatDayOfWeek(selectedDate)
     const formatDaySelected = formatDay(selectedDate)
 
-    const data = [
-      ...(tasks[formatDateSelected] ?? []),
-      ...(tasks[formatDayOfWeekSelected] ?? []),
-      ...(tasks[formatDaySelected] ?? []),
-      ...dailyTasks
-    ]
-    return data.sort((a, b) => {
-      return moment(a.startTime).diff(moment(b.startTime))
+    const filteredTasks = tasks.filter((task) => {
+      switch (task.repeat) {
+        case 'daily':
+          return true
+        case 'once':
+          return formatDate(task.startTime) === formatDateSelected
+        case 'weekly':
+          return formatDayOfWeek(task.startTime) === formatDayOfWeekSelected
+        case 'monthly':
+          return formatDay(task.startTime) === formatDaySelected
+        default:
+          return false
+      }
     })
-  }, [tasks, dailyTasks, selectedDate])
+
+    return filteredTasks.sort((a, b) =>
+      moment(a.startTime).diff(moment(b.startTime))
+    )
+  }, [tasks, selectedDate])
 
   return dataTasks
 }
 
 export const useMarkedDates = () => {
-  const { tasks } = useOnceTasksStore()
-  const { tasks: dailyTasks } = useDailyTasksStore()
-
-  const getTaskDots = (taskArray: any[]) => {
-    return taskArray.flatMap((item) => {
-      return item
-        ? [
-            {
-              color: item.color,
-              selectedColor: item.color
-            }
-          ]
-        : []
-    })
-  }
+  const { tasks } = useTasksStore()
 
   const markedDates = useMemo(() => {
     return (date: Moment) => {
-      const formatDateSelected = formatDate(date)
       const formatDayOfWeekSelected = formatDayOfWeek(date)
       const formatDaySelected = formatDay(date)
 
-      const dots = [
-        ...getTaskDots(dailyTasks),
-        ...getTaskDots(tasks[formatDateSelected] || []),
-        ...getTaskDots(tasks[formatDayOfWeekSelected] || []),
-        ...getTaskDots(tasks[formatDaySelected] || [])
-      ]
+      const dots = tasks.flatMap((task) => {
+        switch (task.repeat) {
+          case 'daily':
+            return [{ color: task.color, selectedColor: task.color }]
+          case 'once':
+            if (moment(task.startTime).isSame(date, 'day')) {
+              return [{ color: task.color, selectedColor: task.color }]
+            }
+            return []
+          case 'weekly':
+            if (formatDayOfWeek(task.startTime) === formatDayOfWeekSelected) {
+              return [{ color: task.color, selectedColor: task.color }]
+            }
+            return []
+          case 'monthly':
+            if (formatDay(task.startTime) === formatDaySelected) {
+              return [{ color: task.color, selectedColor: task.color }]
+            }
+            return []
+          default:
+            return []
+        }
+      })
 
-      return { dots }
+      return { dots: dots.slice(0, 4) }
     }
-  }, [dailyTasks.length, tasks])
+  }, [tasks])
 
   return markedDates
 }

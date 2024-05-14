@@ -1,29 +1,47 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
-import React, { FC, useState } from 'react'
-import { Button, Input, NavigationBar, Row, Text } from 'components'
-import { color, colorRange, space } from 'themes'
+import { TouchableOpacity, View } from 'react-native'
+import React, { FC, useCallback, useRef, useState } from 'react'
+import {
+  Button,
+  IconTask,
+  Input,
+  NavigationBar,
+  Row,
+  SelectColor,
+  Text
+} from 'components'
+import { space } from 'themes'
 import {
   COLORS,
   DATA_REPEAT,
   formatDate,
   formatDateTime,
+  generateUniqueId,
   nearestRoundedTime,
   validateTitle
 } from 'lib'
 import moment from 'moment'
 import { Controller, useForm } from 'react-hook-form'
 import { IFormInput } from './types'
-import { useDailyTasksStore, useOnceTasksStore } from 'stores'
+import { useTasksStore, useThemeStore } from 'stores'
 import { NavigationService, ScreenProps } from 'navigation'
-import { TaskType } from 'stores/tasks/types'
+import { IconType, TaskType } from 'stores/tasks/types'
 import CardPicker from './components/CardPicker'
-import SelectColor from './components/SelectColor'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import SelectRepeat from './components/SelectRepeat'
 import DatePicker from 'react-native-date-picker'
+import {
+  BottomSheetBackdrop,
+  BottomSheetFlatList,
+  BottomSheetModal
+} from '@gorhom/bottom-sheet'
+import { styles } from './styles'
+
+const DATA_ICONS: IconType[] = ['work', 'study', 'sleep', 'wake-up', 'other']
 
 const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   const { bottom } = useSafeAreaInsets()
+  const { theme } = useThemeStore()
+  const bottomSheetRef = useRef<BottomSheetModal>(null)
   const data = route.params?.data
   const innitialStartTime = data?.startTime
     ? formatDateTime(data?.startTime)
@@ -32,14 +50,8 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
     ? formatDateTime(data?.endTime)
     : nearestRoundedTime(moment().add(15, 'minutes'))
 
-  const {
-    setTask: setOnceTask,
-    setWeeklyTask,
-    setMonthlyTask,
-    updateTask
-  } = useOnceTasksStore()
-  const { setTask: setDailyTask, updateTask: updateDailyTask } =
-    useDailyTasksStore()
+  const { setTask, updateTask } = useTasksStore()
+  const [open, setOpen] = useState(false)
 
   const {
     control,
@@ -50,10 +62,11 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
     formState: { errors }
   } = useForm<IFormInput>({
     defaultValues: {
-      title: data?.title ?? '',
+      ...data,
       startTime: innitialStartTime,
       endTime: innitialEndTime,
       color: data?.color ?? COLORS[0],
+      icon: data?.icon ?? 'work',
       repeat: data?.repeat
         ? DATA_REPEAT.find((item) => item.value === data?.repeat)
         : DATA_REPEAT[0]
@@ -61,21 +74,16 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   })
 
   const startTime = watch('startTime')
-
-  const [open, setOpen] = useState(false)
+  const dataColor = watch('color')
 
   const onConfirm = (date: Date) => {
-    const newDate = moment(date.toISOString())
-    const start = moment(getValues('startTime'))
-    const end = moment(getValues('endTime'))
-
-    // update start and end date
-    start.set({
+    const newDate = moment(date)
+    const start = moment(getValues('startTime')).set({
       year: newDate.year(),
       month: newDate.month(),
       date: newDate.date()
     })
-    end.set({
+    const end = moment(getValues('endTime')).set({
       year: newDate.year(),
       month: newDate.month(),
       date: newDate.date()
@@ -93,57 +101,85 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
     setOpen(false)
   }
 
+  const handleIcon = () => {
+    bottomSheetRef.current?.present()
+  }
+
   const onSubmit = (dataForm: IFormInput) => {
     const dataTask: TaskType = {
       ...data,
       ...dataForm,
-      id: data?.id ?? moment().valueOf().toString(),
+      id: data?.id ?? generateUniqueId(),
       repeat: dataForm.repeat.value,
-      icon: 'work',
       finishTimes: data?.finishTimes ?? []
     }
 
-    switch (dataForm.repeat.value) {
-      case 'daily':
-        data?.id ? updateDailyTask(dataTask) : setDailyTask(dataTask)
-        break
-
-      case 'weekly':
-        data?.id ? updateTask(dataTask) : setWeeklyTask(dataTask)
-        break
-
-      case 'monthly':
-        data?.id ? updateTask(dataTask) : setMonthlyTask(dataTask)
-        break
-
-      default:
-        data?.id ? updateTask(dataTask) : setOnceTask(dataTask)
-        break
-    }
-
+    data?.id ? updateTask(dataTask) : setTask(dataTask)
     NavigationService.goBack()
   }
+
+  const renderItem = ({ item }: { item: IconType }) => {
+    const handleSelected = () => {
+      setValue('icon', item)
+      bottomSheetRef.current?.close()
+    }
+    return (
+      <TouchableOpacity activeOpacity={0.8} onPress={handleSelected}>
+        <IconTask colorIcon={dataColor} typeIcon={item} style={styles.icon} />
+      </TouchableOpacity>
+    )
+  }
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        {...props}
+      />
+    ),
+    []
+  )
 
   return (
     <View style={styles.container}>
       <NavigationBar title={data?.id ? 'Chỉnh sửa tác vụ' : 'Tác vụ mới'} />
       <View style={styles.body}>
-        <Controller
-          name="title"
-          control={control}
-          rules={{
-            required: 'Hãy nhập điều bạn muốn làm',
-            validate: validateTitle()
-          }}
-          render={({ field: { onChange, value } }) => (
-            <Input
-              label="Bạn muốn làm gì?"
-              value={value}
-              onChangeText={onChange}
-              notice={errors?.title?.message}
+        <View>
+          <Text style={styles.title}>Bạn muốn làm gi?</Text>
+          <Row gap="xs">
+            <Controller
+              name="icon"
+              control={control}
+              render={({ field: { value } }) => (
+                <TouchableOpacity activeOpacity={0.8} onPress={handleIcon}>
+                  <IconTask
+                    colorIcon={dataColor}
+                    typeIcon={value}
+                    style={styles.icon}
+                  />
+                </TouchableOpacity>
+              )}
             />
-          )}
-        />
+            <Controller
+              name="title"
+              control={control}
+              rules={{
+                required: 'Hãy nhập điều bạn muốn làm',
+                validate: validateTitle()
+              }}
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  placeholder="Hãy nhập điều bạn muốn làm"
+                  value={value}
+                  onChangeText={onChange}
+                  notice={errors?.title?.message}
+                  style={styles.input}
+                />
+              )}
+            />
+          </Row>
+        </View>
         <View>
           <Text style={styles.title}>Thời gian tác vụ</Text>
           <View style={styles.containerTime}>
@@ -151,11 +187,7 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
               activeOpacity={0.8}
               onPress={handleShow}
               style={styles.date}>
-              <Text
-                textAlign="center"
-                fontWeight="bold"
-                size="l"
-                color={color.info}>
+              <Text textAlign="center" fontWeight="bold" size="l" color={theme}>
                 {formatDate(startTime)}
               </Text>
             </TouchableOpacity>
@@ -210,8 +242,23 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
         confirmText="Chọn"
         cancelText="Hủy"
       />
+      <BottomSheetModal
+        ref={bottomSheetRef}
+        enableDynamicSizing
+        backdropComponent={renderBackdrop}>
+        <BottomSheetFlatList
+          numColumns={5}
+          data={DATA_ICONS}
+          renderItem={renderItem}
+          columnWrapperStyle={styles.colunm}
+          contentContainerStyle={[
+            styles.BSList,
+            { paddingBottom: bottom + space.m }
+          ]}
+        />
+      </BottomSheetModal>
       <Button
-        title="Lưu"
+        title={data?.id ? 'Lưu thay đổi' : 'Tạo tác vụ'}
         onPress={handleSubmit(onSubmit)}
         style={[
           styles.button,
@@ -226,46 +273,3 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
 }
 
 export default CreateTask
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
-  body: {
-    flex: 1,
-    marginHorizontal: space.m,
-    gap: space.m
-  },
-  title: {
-    fontWeight: 'bold',
-    marginLeft: space.s,
-    marginBottom: space.xxs
-  },
-  border: {
-    borderRadius: space.xs,
-    overflow: 'hidden'
-  },
-  containerTime: {
-    backgroundColor: colorRange.gray[100],
-    borderRadius: space.xs,
-    paddingVertical: space.m,
-    paddingHorizontal: space.xxl
-  },
-  date: {
-    alignSelf: 'center',
-    paddingHorizontal: space.l,
-    paddingVertical: space.xs
-  },
-  dashed: {
-    flex: 1,
-    marginHorizontal: space.xs,
-    borderWidth: 1,
-    borderStyle: 'dashed'
-  },
-  button: {
-    marginHorizontal: space.m
-  },
-  subButton: {
-    flex: 1
-  }
-})

@@ -4,6 +4,7 @@ import { Text } from 'components'
 import { DATA_REPEAT } from 'lib'
 import { DataRepeat } from '../types'
 import { color, colorRange, space } from 'themes'
+import { useThemeStore } from 'stores'
 
 type Props = {
   value: DataRepeat
@@ -11,6 +12,7 @@ type Props = {
 }
 
 const SelectRepeat = ({ value, onChange }: Props) => {
+  const { theme } = useThemeStore()
   const renderRepeat = ({ item }: { item: DataRepeat }) => {
     const isActive = item.value === value.value
 
@@ -24,7 +26,7 @@ const SelectRepeat = ({ value, onChange }: Props) => {
         onPress={handleSelect}
         style={[
           styles.itemRepeat,
-          { backgroundColor: isActive ? color.info : color.transparent }
+          { backgroundColor: isActive ? theme : color.transparent }
         ]}>
         <Text fontWeight="500" color={isActive ? color.white : color.black}>
           {item.label}
