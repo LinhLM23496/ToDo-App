@@ -1,6 +1,7 @@
 import { Dimensions } from 'react-native'
 
 export type SizeType = 'xxs' | 'xs' | 's' | 'm' | 'l' | 'xl' | 'xxl' | '3xl'
+export type SpaceSizeType = 'xxs' | 'xs' | 's' | 'm' | 'l' | 'xl' | 'xxl'
 
 const { width, height } = Dimensions.get('window')
 const baseRatioSize = 400
@@ -40,7 +41,7 @@ export const iconSize = {
   l: Math.round(28 * ratio),
   xl: Math.round(32 * ratio),
   xxl: Math.round(36 * ratio),
-  '3xl': Math.round(64 * ratio)
+  '3xl': Math.round(48 * ratio)
 }
 
 export const avatarSize = {

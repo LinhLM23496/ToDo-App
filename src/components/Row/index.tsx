@@ -1,6 +1,7 @@
 import { View } from 'react-native'
 import React, { Ref, forwardRef } from 'react'
 import { ViewCustomProps } from './types'
+import { space } from 'themes'
 
 const Row = forwardRef((props: ViewCustomProps, ref: Ref<any>) => {
   const {
@@ -14,6 +15,8 @@ const Row = forwardRef((props: ViewCustomProps, ref: Ref<any>) => {
     justifyContent,
     gap
   } = props
+
+  const gapSize = gap ? space?.[gap] : 0
   return (
     <View
       ref={ref}
@@ -25,7 +28,7 @@ const Row = forwardRef((props: ViewCustomProps, ref: Ref<any>) => {
           alignContent: alignContent ?? undefined,
           alignSelf: alignSelf ?? undefined,
           justifyContent: justifyContent ?? undefined,
-          gap: gap ?? undefined
+          gap: gapSize || undefined
         },
         style
       ]}>

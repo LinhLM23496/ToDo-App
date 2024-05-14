@@ -1,5 +1,5 @@
 import React from 'react'
-import { Path, Svg } from 'react-native-svg'
+import { ClipPath, Defs, G, Path, Rect, Svg } from 'react-native-svg'
 import { iconSize } from 'themes'
 
 type Props = {
@@ -10,15 +10,17 @@ type Props = {
 const IconDelete = ({ size = iconSize.m, color = '#292D32' }: Props) => {
   return (
     <Svg height={size} width={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        opacity="0.4"
-        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-        fill={color}
-      />
-      <Path
-        d="M10.5795 15.5801C10.3795 15.5801 10.1895 15.5001 10.0495 15.3601L7.21945 12.5301C6.92945 12.2401 6.92945 11.7601 7.21945 11.4701C7.50945 11.1801 7.98945 11.1801 8.27945 11.4701L10.5795 13.7701L15.7195 8.6301C16.0095 8.3401 16.4895 8.3401 16.7795 8.6301C17.0695 8.9201 17.0695 9.4001 16.7795 9.6901L11.1095 15.3601C10.9695 15.5001 10.7795 15.5801 10.5795 15.5801Z"
-        fill={color}
-      />
+      <G clip-path="url(#clip0_1_13244)">
+        <Path
+          d="M14.12 10.47L12 12.59L9.87 10.47L8.46 11.88L10.59 14L8.47 16.12L9.88 17.53L12 15.41L14.12 17.53L15.53 16.12L13.41 14L15.53 11.88L14.12 10.47ZM15.5 4L14.5 3H9.5L8.5 4H5V6H19V4H15.5ZM6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM8 9H16V19H8V9Z"
+          fill={color}
+        />
+      </G>
+      <Defs>
+        <ClipPath id="clip0_1_13244">
+          <Rect width="24" height="24" fill="white" />
+        </ClipPath>
+      </Defs>
     </Svg>
   )
 }

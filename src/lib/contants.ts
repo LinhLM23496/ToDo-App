@@ -1,4 +1,5 @@
 import { DataRepeat } from 'screens/CreateTask/types'
+import { ThemeType } from 'stores/themes/types'
 
 export const COLORS = [
   '#CD3645',
@@ -7,6 +8,16 @@ export const COLORS = [
   '#678983',
   '#3F979B',
   '#6F1AB6'
+]
+
+export const COLORS_THEME: ThemeType[] = [
+  '#ffff35',
+  '#dd2423',
+  '#a856dc',
+  '#ff8da1',
+  '#3F979B',
+  '#00ff00',
+  '#46BFF8'
 ]
 
 export const DATA_REPEAT: DataRepeat[] = [

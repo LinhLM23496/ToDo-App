@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 import { FlexAlignType, ViewProps, ViewStyle } from 'react-native'
+import { SpaceSizeType } from 'themes'
 
 export type ViewCustomProps = ViewProps & {
   children?: ReactNode
@@ -29,5 +30,5 @@ export type ViewCustomProps = ViewProps & {
     | 'space-around'
     | 'space-evenly'
     | undefined
-  gap?: number
+  gap?: SpaceSizeType
 }

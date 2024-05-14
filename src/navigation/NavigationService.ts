@@ -9,6 +9,7 @@ import { TaskType } from 'stores/tasks/types'
 export type RootStackParamList = {
   Home: undefined
   CreateTask: { data?: TaskType }
+  Setting: undefined
 }
 
 export type ScreenProps<

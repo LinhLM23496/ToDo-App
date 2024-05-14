@@ -1,16 +1,17 @@
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useRef } from 'react'
 import { TaskType } from 'stores/tasks/types'
-import { color, iconSize, space } from 'themes'
-import { IconArrowLeft, IconTick } from 'assets'
+import { color, colorRange, iconSize, space } from 'themes'
+import { IconRepeat, IconTick } from 'assets'
 import { formatTime, periodTime } from 'lib'
-import { Text } from 'components'
+import { IconTask, Row, Text } from 'components'
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useRatioStore } from 'stores'
 
 type Props = {
   data: TaskType
@@ -35,14 +36,18 @@ const DATA_OPTIONS = [
   { label: 'Delete', icon: 'delete' }
 ]
 
-const TaskCard = ({
-  data,
-  selectedDate,
-  onUpdate,
-  onUpdateStatus,
-  onRemove
-}: Props) => {
-  const { title, startTime, endTime, color: colorIcon, finishTimes } = data
+const TaskCard = (props: Props) => {
+  const { data, selectedDate, onUpdate, onUpdateStatus, onRemove } = props
+  const {
+    title,
+    startTime,
+    endTime,
+    color: colorIcon,
+    finishTimes,
+    icon: typeIcon,
+    repeat
+  } = data
+  const { ratio } = useRatioStore()
   const isFinished = !!finishTimes?.includes(selectedDate)
   const { bottom } = useSafeAreaInsets()
   const bottomSheetRef = useRef<BottomSheetModal>(null)
@@ -52,7 +57,11 @@ const TaskCard = ({
   }
 
   const onConfirm = () => {
-    Alert.alert('Xóa tác vụ', 'Bạn có muốn xóa tác vụ này?', [
+    const subText =
+      repeat === 'once'
+        ? 'Bạn có muốn xóa tác vụ này?'
+        : 'Bạn có chắc chắn muốn xóa tác vụ này? Đây là tác vụ lặp lại.'
+    Alert.alert('Xóa tác vụ', subText, [
       {
         text: 'Không',
         style: 'cancel'
@@ -103,19 +112,25 @@ const TaskCard = ({
       activeOpacity={0.8}
       onPress={handleOptions}
       style={styles.container}>
-      <Text fontWeight="500">{formatTime(startTime)}</Text>
-      <View style={[styles.icon, { backgroundColor: colorIcon }]}>
-        <IconArrowLeft />
-      </View>
+      <Text size="s" fontWeight="500" color={colorRange.gray[700]}>
+        {formatTime(startTime)}
+      </Text>
+      <IconTask colorIcon={colorIcon} typeIcon={typeIcon} />
       <View style={styles.content}>
-        <Text flex={1} size="s" color={isFinished ? color.gray : color.black}>
-          {periodTime(startTime, endTime)}
-        </Text>
+        <Row gap={'xs'}>
+          <Text size="s" fontWeight="500" color={colorRange.gray[700]}>
+            {periodTime(startTime, endTime)}
+          </Text>
+          {repeat !== 'once' && (
+            <IconRepeat size={iconSize.xs} color={colorRange.gray[700]} />
+          )}
+        </Row>
         <Text
           flex={1}
           fontWeight={isFinished ? '400' : '500'}
           color={isFinished ? color.gray : color.black}
           size="l"
+          ratio={ratio}
           textDecorationLine={isFinished ? 'line-through' : 'none'}>
           {title}
         </Text>
@@ -164,19 +179,11 @@ const TickBox = ({ isActive, colorIcon }: TickBoxProps) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingLeft: space.xs,
+    paddingLeft: space.m,
     paddingRight: space.m,
     alignItems: 'center',
     gap: space.s,
     flex: 1
-  },
-  icon: {
-    height: iconSize.xl,
-    width: 'auto',
-    aspectRatio: 1,
-    borderRadius: 100,
-    justifyContent: 'center',
-    alignItems: 'center'
   },
   content: {
     flex: 1

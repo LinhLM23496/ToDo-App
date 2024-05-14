@@ -16,7 +16,7 @@ export default function Button(props: IButtonProps) {
     loading,
     ElementLeft,
     ElementRight,
-    spacing = space.s,
+    spacing = 's',
     borderRadius = 100,
     isFullWidth,
     ...rest
@@ -24,6 +24,8 @@ export default function Button(props: IButtonProps) {
 
   const isFull = ['filled', 'split'].includes(variant)
   const isGhost = variant === 'ghost'
+
+  const spaceSize = space?.[spacing]
   const colorText = disabled
     ? colorRange.gray[100]
     : isFull
@@ -31,7 +33,7 @@ export default function Button(props: IButtonProps) {
     : color.primary
   const styleConatiner: ViewStyle = {
     borderRadius,
-    paddingVertical: spacing,
+    paddingVertical: spaceSize,
     paddingHorizontal: title ? space.l : space.s,
     aspectRatio: !title ? 1 : undefined,
     backgroundColor: !isFull

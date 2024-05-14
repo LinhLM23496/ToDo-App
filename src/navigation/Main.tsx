@@ -26,6 +26,7 @@ const Main = () => {
         }}>
         <Screen {...Route.Home} />
         <Screen {...Route.CreateTask} />
+        <Screen {...Route.Setting} />
       </Navigator>
     </NavigationContainer>
   )

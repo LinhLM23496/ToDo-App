@@ -1,33 +1,32 @@
-import { FlatList, StyleSheet, View } from 'react-native'
+import {
+  FlatList,
+  Image,
+  TouchableOpacity,
+  View,
+  ViewStyle
+} from 'react-native'
 import React, { useRef, useState } from 'react'
 import ReactNativeCalendarStrip from 'react-native-calendar-strip'
 import moment, { Moment } from 'moment'
-import { color, colorRange, fontSize, space } from 'themes'
+import { colorRange, iconSize, space } from 'themes'
 import { Button, Text } from 'components'
 import { formatDate } from 'lib'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NavigationService, Route } from 'navigation'
-import {
-  useDailyTasksStore,
-  useMarkedDates,
-  useOnceTasksStore,
-  useTasks
-} from 'stores'
+import { useTasksStore, useMarkedDates, useTasks, useThemeStore } from 'stores'
 import { TaskType } from 'stores/tasks/types'
 import TaskCard from './components/TaskCard'
 import 'moment/locale/vi'
-import { IconPlus } from 'assets'
+import { IconPlus, IconSetting, images } from 'assets'
 import DatePicker from 'react-native-date-picker'
 import { useFocusEffect } from '@react-navigation/native'
+import { styles } from './styles'
 
 const Home = () => {
   const ref = useRef<ReactNativeCalendarStrip>(null)
   const { top, bottom } = useSafeAreaInsets()
-  const { removeTask, updateStatusTask } = useOnceTasksStore()
-  const {
-    removeTask: removeDailyTask,
-    updateStatusTask: updateStatusDailyTask
-  } = useDailyTasksStore()
+  const { theme } = useThemeStore()
+  const { removeTask, updateStatusTask } = useTasksStore()
   const markedDates = useMarkedDates()
 
   const [selectedDate, setSelectedDate] = useState(moment())
@@ -35,6 +34,8 @@ const Home = () => {
   const data = useTasks(selectedDate)
   const formatDateSelected = formatDate(selectedDate)
   const [open, setOpen] = useState(false)
+
+  const styleTheme: ViewStyle = { backgroundColor: theme, borderColor: theme }
 
   useFocusEffect(() => {
     ref.current?.forceUpdate()
@@ -59,25 +60,18 @@ const Home = () => {
   }
 
   const renderItem = ({ item }: { item: TaskType }) => {
-    const { id, repeat } = item
+    const { id } = item
     const handleUpdate = () => {
       NavigationService.push(Route.CreateTask, { data: item })
     }
 
     const handleRemove = () => {
-      if (repeat === 'daily') {
-        removeDailyTask(id)
-      } else {
-        removeTask(id)
-      }
+      removeTask(id)
       ref.current?.forceUpdate()
     }
 
     const handleUpdateStatus = (status: boolean) => {
-      if (repeat === 'daily') {
-        return updateStatusDailyTask(id, formatDateSelected, status)
-      }
-      return updateStatusTask(id, formatDateSelected, status)
+      updateStatusTask(id, formatDateSelected, status)
     }
 
     return (
@@ -95,9 +89,9 @@ const Home = () => {
   return (
     <View style={[styles.container, { paddingTop: top }]}>
       <ReactNativeCalendarStrip
+        ref={ref}
         locale={{ name: 'vi', config: { week: { dow: 1 } } }}
         scrollable
-        ref={ref}
         selectedDate={selectedDate}
         onDateSelected={onDateSelected}
         markedDates={markedDates}
@@ -106,7 +100,7 @@ const Home = () => {
         daySelectionAnimation={{
           type: 'background',
           duration: 50,
-          highlightColor: color.black
+          highlightColor: theme
         }}
         style={styles.containerCalendar}
         calendarHeaderStyle={styles.headerStyle}
@@ -116,13 +110,14 @@ const Home = () => {
         highlightDateNumberStyle={styles.highlight}
         highlightDateNameStyle={styles.highlight}
         iconContainer={styles.iconContainer}
+        scrollToOnSetSelectedDate
       />
       <FlatList
         extraData={selectedDate}
         data={data}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        ListEmptyComponent={<Text>No event</Text>}
+        ListEmptyComponent={<EmptyView />}
         style={styles.containerList}
         contentContainerStyle={[
           styles.list,
@@ -144,49 +139,25 @@ const Home = () => {
       <Button
         ElementLeft={<IconPlus />}
         onPress={() => NavigationService.push(Route.CreateTask)}
-        style={styles.button}
+        style={[styles.button, styleTheme]}
       />
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => NavigationService.push(Route.Setting)}
+        style={[styles.buttonSetting, { top: top + space.xs }]}>
+        <IconSetting size={iconSize.l} color={theme} />
+      </TouchableOpacity>
     </View>
   )
 }
 
 export default Home
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colorRange.gray[200]
-  },
-  containerCalendar: {
-    height: 100,
-    paddingTop: space.m,
-    paddingBottom: space.xs
-  },
-  containerList: {
-    backgroundColor: color.white,
-    borderTopLeftRadius: space.l,
-    borderTopRightRadius: space.l
-  },
-  list: {
-    gap: space.m,
-    paddingTop: space.m
-  },
-  iconContainer: {
-    paddingHorizontal: space.xxs
-  },
-  headerStyle: {
-    color: color.danger,
-    fontSize: fontSize.l
-  },
-  highlight: {
-    color: color.white
-  },
-  date: {
-    color: color.black
-  },
-  button: {
-    position: 'absolute',
-    right: space.m,
-    bottom: space.xxl
-  }
-})
+const EmptyView = () => {
+  return (
+    <View>
+      <Text textAlign="center">Chưa có tác vụ nào</Text>
+      <Image source={images.empty} style={styles.empty} />
+    </View>
+  )
+}

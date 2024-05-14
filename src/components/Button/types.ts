@@ -5,6 +5,7 @@ import {
   TouchableOpacityProps,
   ViewStyle
 } from 'react-native'
+import { SpaceSizeType } from 'themes'
 
 type ButtonVariantType = 'filled' | 'outline' | 'ghost'
 
@@ -17,7 +18,7 @@ export interface IButtonProps extends TouchableOpacityProps {
   loading?: boolean
   ElementLeft?: ReactNode
   ElementRight?: ReactNode
-  spacing?: number
+  spacing?: SpaceSizeType
   borderRadius?: number
   isFullWidth?: boolean
 }
