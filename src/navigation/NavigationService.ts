@@ -4,11 +4,12 @@ import {
   createNavigationContainerRef
 } from '@react-navigation/native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { Moment } from 'moment'
 import { TaskType } from 'stores/tasks/types'
 
 export type RootStackParamList = {
   Home: undefined
-  CreateTask: { data?: TaskType }
+  CreateTask: { data?: TaskType; selectedDate: Moment }
   Setting: undefined
 }
 
