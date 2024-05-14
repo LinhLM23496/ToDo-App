@@ -11,12 +11,12 @@ export const COLORS = [
 ]
 
 export const COLORS_THEME: ThemeType[] = [
-  '#ffff35',
+  '#f3c300',
   '#dd2423',
   '#a856dc',
   '#ff8da1',
   '#3F979B',
-  '#00ff00',
+  '#51cc56',
   '#46BFF8'
 ]
 

@@ -1,4 +1,4 @@
-import { TouchableOpacity, View } from 'react-native'
+import { Alert, TouchableOpacity, View } from 'react-native'
 import React, { FC, useCallback, useRef, useState } from 'react'
 import {
   Button,
@@ -19,7 +19,7 @@ import {
   nearestRoundedTime,
   validateTitle
 } from 'lib'
-import moment from 'moment'
+import moment, { Moment } from 'moment'
 import { Controller, useForm } from 'react-hook-form'
 import { IFormInput } from './types'
 import { useTasksStore, useThemeStore } from 'stores'
@@ -38,17 +38,28 @@ import { styles } from './styles'
 
 const DATA_ICONS: IconType[] = ['work', 'study', 'sleep', 'wake-up', 'other']
 
+const setDateTime = (date: Moment, time?: string): Moment => {
+  const newDate = moment(date)
+  const dateTime = moment(time ?? undefined).set({
+    year: newDate.year(),
+    month: newDate.month(),
+    date: newDate.date()
+  })
+
+  return dateTime
+}
+
 const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   const { bottom } = useSafeAreaInsets()
   const { theme } = useThemeStore()
   const bottomSheetRef = useRef<BottomSheetModal>(null)
-  const data = route.params?.data
+  const { data, selectedDate } = route.params ?? {}
   const innitialStartTime = data?.startTime
     ? formatDateTime(data?.startTime)
-    : nearestRoundedTime(moment())
+    : nearestRoundedTime(setDateTime(selectedDate))
   const innitialEndTime = data?.endTime
     ? formatDateTime(data?.endTime)
-    : nearestRoundedTime(moment().add(15, 'minutes'))
+    : nearestRoundedTime(setDateTime(selectedDate).add(15, 'minutes'))
 
   const { setTask, updateTask } = useTasksStore()
   const [open, setOpen] = useState(false)
@@ -78,16 +89,8 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
 
   const onConfirm = (date: Date) => {
     const newDate = moment(date)
-    const start = moment(getValues('startTime')).set({
-      year: newDate.year(),
-      month: newDate.month(),
-      date: newDate.date()
-    })
-    const end = moment(getValues('endTime')).set({
-      year: newDate.year(),
-      month: newDate.month(),
-      date: newDate.date()
-    })
+    const start = setDateTime(newDate, getValues('startTime'))
+    const end = setDateTime(newDate, getValues('endTime'))
 
     setValue('startTime', formatDateTime(start))
     setValue('endTime', formatDateTime(end))
@@ -106,6 +109,13 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   }
 
   const onSubmit = (dataForm: IFormInput) => {
+    const diff = moment(dataForm.endTime).diff(dataForm.startTime, 'minutes')
+
+    if (diff <= 0) {
+      Alert.alert('Thời gian kết thúc không hợp lệ', 'Hãy chọn thời gian khác')
+      return
+    }
+
     const dataTask: TaskType = {
       ...data,
       ...dataForm,
