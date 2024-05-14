@@ -39,7 +39,7 @@ const SliderRatio = ({ onFinishChange }: Props, ref: Ref<SliderRatioRef>) => {
       </Row>
       <Row style={styles.body}>
         <Slider
-          style={{ width: '80%', height: 20 }}
+          style={styles.slider}
           minimumValue={0.7}
           maximumValue={1.5}
           minimumTrackTintColor={theme}
@@ -82,5 +82,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: -space.xs
+  },
+  slider: {
+    width: '80%',
+    height: 20
   }
 })
