@@ -65,6 +65,9 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
 
   const { setTask, updateTask } = useTasksStore()
   const [open, setOpen] = useState(false)
+  const [diffTime, setDiffTime] = useState(
+    moment(innitialEndTime).diff(innitialStartTime, 'minutes')
+  )
 
   const {
     control,
@@ -87,13 +90,11 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   })
 
   const startTime = watch('startTime')
-  const endTime = watch('endTime')
   const dataColor = watch('color')
 
   const handleSelectedTime = (minutes: number) => {
     Keyboard.dismiss()
-    const newDate = moment(startTime).add(minutes, 'minutes')
-    setValue('endTime', formatDateTime(newDate))
+    setDiffTime(minutes)
   }
 
   const onConfirm = (date: Date) => {
@@ -121,9 +122,7 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
 
   const onSubmit = (dataForm: IFormInput) => {
     Keyboard.dismiss()
-    const diff = moment(dataForm.endTime).diff(dataForm.startTime, 'minutes')
-
-    if (diff <= 0) {
+    if (diffTime <= 0) {
       Alert.alert('Thời gian kết thúc không hợp lệ', 'Hãy chọn thời gian khác')
       return
     }
@@ -132,6 +131,7 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
       ...data,
       ...dataForm,
       id: data?.id ?? generateUniqueId(),
+      endTime: moment(data?.startTime).add(diffTime, 'minutes'),
       repeat: dataForm.repeat.value,
       finishTimes: data?.finishTimes ?? []
     }
@@ -212,7 +212,7 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
                 <CardPicker
                   onChange={onChange}
                   startTime={value}
-                  endTime={endTime}
+                  diffTime={diffTime}
                 />
               )}
             />
@@ -251,7 +251,7 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
         date={new Date(startTime)}
         onConfirm={onConfirm}
         onCancel={handleCancel}
-        title={'Chọn giờ'}
+        title={'Chọn ngày'}
         confirmText="Chọn"
         cancelText="Hủy"
       />
