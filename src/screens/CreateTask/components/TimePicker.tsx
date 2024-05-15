@@ -7,6 +7,7 @@ import moment from 'moment'
 
 type Props = {
   startTime: string
+  diffTime: number
   onChange: (value: number) => void
 }
 
@@ -28,8 +29,12 @@ const convertIndexToTime = (index: number) => {
   }
 }
 
-const TimePicker = ({ startTime, onChange }: Props) => {
-  const [select, setSelect] = useState(1)
+const TimePicker = ({
+  startTime,
+  diffTime: diffTimeProps,
+  onChange
+}: Props) => {
+  const [select, setSelect] = useState(diffTimeProps / 15)
   const { theme } = useThemeStore()
 
   const diffTime = useMemo(() => {

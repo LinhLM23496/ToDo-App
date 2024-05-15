@@ -1,4 +1,4 @@
-import { Alert, Keyboard, TouchableOpacity, View } from 'react-native'
+import { Keyboard, TouchableOpacity, View } from 'react-native'
 import React, { FC, useCallback, useRef, useState } from 'react'
 import {
   Button,
@@ -122,16 +122,12 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
 
   const onSubmit = (dataForm: IFormInput) => {
     Keyboard.dismiss()
-    if (diffTime <= 0) {
-      Alert.alert('Thời gian kết thúc không hợp lệ', 'Hãy chọn thời gian khác')
-      return
-    }
 
     const dataTask: TaskType = {
       ...data,
       ...dataForm,
       id: data?.id ?? generateUniqueId(),
-      endTime: moment(data?.startTime).add(diffTime, 'minutes'),
+      endTime: moment(dataForm?.startTime).add(diffTime, 'minutes'),
       repeat: dataForm.repeat.value,
       finishTimes: data?.finishTimes ?? []
     }
@@ -227,7 +223,11 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
             </TouchableOpacity>
           </View>
         </View>
-        <TimePicker startTime={startTime} onChange={handleSelectedTime} />
+        <TimePicker
+          startTime={startTime}
+          diffTime={diffTime}
+          onChange={handleSelectedTime}
+        />
         <Controller
           name="color"
           control={control}
