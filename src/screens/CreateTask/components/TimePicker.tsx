@@ -34,7 +34,7 @@ const TimePicker = ({
   diffTime: diffTimeProps,
   onChange
 }: Props) => {
-  const [select, setSelect] = useState(diffTimeProps / 15)
+  const [select, setSelect] = useState(Math.round(diffTimeProps / 15))
   const { theme } = useThemeStore()
 
   const diffTime = useMemo(() => {
