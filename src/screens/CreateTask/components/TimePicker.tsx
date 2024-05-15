@@ -29,11 +29,11 @@ const convertIndexToTime = (index: number) => {
 }
 
 const TimePicker = ({ startTime, onChange }: Props) => {
-  const [select, setSelect] = useState(0)
+  const [select, setSelect] = useState(1)
   const { theme } = useThemeStore()
 
   const diffTime = useMemo(() => {
-    const diff = moment().endOf('date').diff(startTime, 'minutes')
+    const diff = moment(startTime).endOf('date').diff(startTime, 'minutes')
     return Math.floor(diff / 15)
   }, [startTime])
 
@@ -66,7 +66,7 @@ const TimePicker = ({ startTime, onChange }: Props) => {
         <FlatList
           extraData={startTime}
           horizontal
-          data={new Array(diffTime).fill(0)}
+          data={new Array(!diffTime ? 1 : diffTime).fill(0)}
           renderItem={renderTime}
           showsHorizontalScrollIndicator={false}
         />

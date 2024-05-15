@@ -5,17 +5,19 @@ import { Text } from 'components'
 import DatePicker from 'react-native-date-picker'
 import { color, space } from 'themes'
 import { useThemeStore } from 'stores'
+import moment from 'moment'
 
 type Props = {
   startTime: string
-  endTime: string
+  diffTime: number
   onChange: (value: string) => void
   minimumDate?: Date
 }
 
-const CardPicker = ({ startTime, endTime, onChange, minimumDate }: Props) => {
+const CardPicker = ({ startTime, diffTime, onChange, minimumDate }: Props) => {
   const { theme } = useThemeStore()
   const [open, setOpen] = useState(false)
+  const endTime = moment(startTime).add(diffTime, 'minutes')
 
   const onConfirm = (date: Date) => {
     onChange(formatDateTime(date.toISOString()))
