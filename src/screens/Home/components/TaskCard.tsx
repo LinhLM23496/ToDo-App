@@ -36,13 +36,13 @@ type DataOptionsType = {
 const DATA_OPTIONS = [
   {
     key: 'edit',
-    label: 'Edit',
+    label: 'Chỉnh sửa tác vụ',
     Icon: <IconEdit />,
     color: color.black
   },
   {
     key: 'delete',
-    label: 'Delete',
+    label: 'Xóa tác vụ',
     Icon: <IconDelete color={color.danger} />,
     color: color.danger
   }
