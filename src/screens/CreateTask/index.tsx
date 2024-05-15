@@ -1,4 +1,4 @@
-import { Alert, TouchableOpacity, View } from 'react-native'
+import { Alert, Keyboard, TouchableOpacity, View } from 'react-native'
 import React, { FC, useCallback, useRef, useState } from 'react'
 import {
   Button,
@@ -9,7 +9,7 @@ import {
   SelectColor,
   Text
 } from 'components'
-import { space } from 'themes'
+import { iconSize, space } from 'themes'
 import {
   COLORS,
   DATA_REPEAT,
@@ -35,6 +35,8 @@ import {
   BottomSheetModal
 } from '@gorhom/bottom-sheet'
 import { styles } from './styles'
+import { IconOther } from 'assets'
+import TimePicker from './components/TimePicker'
 
 const DATA_ICONS: IconType[] = ['work', 'study', 'sleep', 'wake-up', 'other']
 
@@ -85,7 +87,14 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   })
 
   const startTime = watch('startTime')
+  const endTime = watch('endTime')
   const dataColor = watch('color')
+
+  const handleSelectedTime = (minutes: number) => {
+    Keyboard.dismiss()
+    const newDate = moment(startTime).add(minutes, 'minutes')
+    setValue('endTime', formatDateTime(newDate))
+  }
 
   const onConfirm = (date: Date) => {
     const newDate = moment(date)
@@ -98,6 +107,7 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   }
 
   const handleShow = () => {
+    Keyboard.dismiss()
     setOpen(true)
   }
   const handleCancel = () => {
@@ -105,10 +115,12 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
   }
 
   const handleIcon = () => {
+    Keyboard.dismiss()
     bottomSheetRef.current?.present()
   }
 
   const onSubmit = (dataForm: IFormInput) => {
+    Keyboard.dismiss()
     const diff = moment(dataForm.endTime).diff(dataForm.startTime, 'minutes')
 
     if (diff <= 0) {
@@ -157,7 +169,7 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
       <View style={styles.body}>
         <View>
           <Text style={styles.title}>Bạn muốn làm gi?</Text>
-          <Row gap="xs">
+          <Row gap="xs" alignItems="flex-start">
             <Controller
               name="icon"
               control={control}
@@ -193,37 +205,29 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
         <View>
           <Text style={styles.title}>Thời gian tác vụ</Text>
           <View style={styles.containerTime}>
+            <Controller
+              name="startTime"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <CardPicker
+                  onChange={onChange}
+                  startTime={value}
+                  endTime={endTime}
+                />
+              )}
+            />
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleShow}
               style={styles.date}>
+              <IconOther color={theme} size={iconSize.s} />
               <Text textAlign="center" fontWeight="bold" size="l" color={theme}>
                 {formatDate(startTime)}
               </Text>
             </TouchableOpacity>
-            <Row>
-              <Controller
-                name="startTime"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <CardPicker onChange={onChange} value={value} />
-                )}
-              />
-              <View style={styles.dashed} />
-              <Controller
-                name="endTime"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <CardPicker
-                    onChange={onChange}
-                    value={value}
-                    minimumDate={new Date(startTime)}
-                  />
-                )}
-              />
-            </Row>
           </View>
         </View>
+        <TimePicker startTime={startTime} onChange={handleSelectedTime} />
         <Controller
           name="color"
           control={control}
@@ -239,7 +243,6 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
           )}
         />
       </View>
-
       <DatePicker
         modal
         mode="date"
@@ -273,7 +276,9 @@ const CreateTask: FC<ScreenProps<'CreateTask'>> = ({ route }) => {
         style={[
           styles.button,
           {
-            marginBottom: bottom + space.m
+            marginBottom: bottom + space.m,
+            backgroundColor: theme,
+            borderColor: theme
           }
         ]}
         styleContent={styles.subButton}

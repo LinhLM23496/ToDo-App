@@ -62,7 +62,10 @@ const Home = () => {
   const renderItem = ({ item }: { item: TaskType }) => {
     const { id } = item
     const handleUpdate = () => {
-      NavigationService.push(Route.CreateTask, { data: item, selectedDate })
+      NavigationService.push(Route.CreateTask, {
+        data: item,
+        selectedDate: formatDateSelected
+      })
     }
 
     const handleRemove = () => {
@@ -139,7 +142,9 @@ const Home = () => {
       <Button
         ElementLeft={<IconPlus />}
         onPress={() =>
-          NavigationService.push(Route.CreateTask, { selectedDate })
+          NavigationService.push(Route.CreateTask, {
+            selectedDate: formatDateSelected
+          })
         }
         style={[styles.button, styleTheme]}
       />

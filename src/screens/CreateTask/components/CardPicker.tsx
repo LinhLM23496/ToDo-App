@@ -1,18 +1,19 @@
-import { StyleSheet, TouchableOpacity } from 'react-native'
+import { Keyboard, StyleSheet, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import { formatDateTime, formatTime } from 'lib'
 import { Text } from 'components'
 import DatePicker from 'react-native-date-picker'
-import { space } from 'themes'
+import { color, space } from 'themes'
 import { useThemeStore } from 'stores'
 
 type Props = {
-  value: string
+  startTime: string
+  endTime: string
   onChange: (value: string) => void
   minimumDate?: Date
 }
 
-const CardPicker = ({ value, onChange, minimumDate }: Props) => {
+const CardPicker = ({ startTime, endTime, onChange, minimumDate }: Props) => {
   const { theme } = useThemeStore()
   const [open, setOpen] = useState(false)
 
@@ -22,6 +23,7 @@ const CardPicker = ({ value, onChange, minimumDate }: Props) => {
   }
 
   const handleShow = () => {
+    Keyboard.dismiss()
     setOpen(true)
   }
   const handleCancel = () => {
@@ -32,14 +34,16 @@ const CardPicker = ({ value, onChange, minimumDate }: Props) => {
       activeOpacity={0.8}
       onPress={handleShow}
       style={[styles.card, { backgroundColor: theme }]}>
-      <Text textAlign="center">{formatTime(value)}</Text>
+      <Text textAlign="center" fontWeight="500" color={color.white}>
+        {formatTime(startTime)} - {formatTime(endTime)}
+      </Text>
 
       <DatePicker
         modal
         mode="time"
         locale="vi-VN"
         open={open}
-        date={new Date(value)}
+        date={new Date(startTime)}
         onConfirm={onConfirm}
         onCancel={handleCancel}
         minimumDate={minimumDate}
