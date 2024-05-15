@@ -26,9 +26,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: space.xxl
   },
   date: {
+    flexDirection: 'row',
     alignSelf: 'center',
+    alignItems: 'center',
     paddingHorizontal: space.l,
-    paddingVertical: space.xs
+    paddingVertical: space.xs,
+    gap: space.xxs
   },
   dashed: {
     flex: 1,
@@ -37,7 +40,9 @@ export const styles = StyleSheet.create({
     borderStyle: 'dashed'
   },
   button: {
-    marginHorizontal: space.m
+    marginHorizontal: space.m,
+    position: 'absolute',
+    bottom: space.m
   },
   subButton: {
     flex: 1

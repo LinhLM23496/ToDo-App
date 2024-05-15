@@ -1,4 +1,10 @@
-import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native'
+import {
+  FlatList,
+  Keyboard,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from 'react-native'
 import React from 'react'
 import { Text } from 'components'
 import { DATA_REPEAT } from 'lib'
@@ -17,6 +23,7 @@ const SelectRepeat = ({ value, onChange }: Props) => {
     const isActive = item.value === value.value
 
     const handleSelect = () => {
+      Keyboard.dismiss()
       onChange(item)
     }
     return (

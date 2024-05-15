@@ -1,8 +1,8 @@
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React, { useCallback, useRef } from 'react'
+import React, { ReactNode, useCallback, useRef } from 'react'
 import { TaskType } from 'stores/tasks/types'
 import { color, colorRange, iconSize, space } from 'themes'
-import { IconRepeat, IconTick } from 'assets'
+import { IconDelete, IconEdit, IconRepeat, IconTick } from 'assets'
 import { formatTime, periodTime } from 'lib'
 import { IconTask, Row, Text } from 'components'
 import {
@@ -27,13 +27,25 @@ type TickBoxProps = {
 }
 
 type DataOptionsType = {
+  key: string
   label: string
-  icon: string
+  Icon: ReactNode
+  color: string
 }
 
 const DATA_OPTIONS = [
-  { label: 'Edit', icon: 'edit' },
-  { label: 'Delete', icon: 'delete' }
+  {
+    key: 'edit',
+    label: 'Edit',
+    Icon: <IconEdit />,
+    color: color.black
+  },
+  {
+    key: 'delete',
+    label: 'Delete',
+    Icon: <IconDelete color={color.danger} />,
+    color: color.danger
+  }
 ]
 
 const TaskCard = (props: Props) => {
@@ -74,11 +86,11 @@ const TaskCard = (props: Props) => {
   }
 
   const renderItem = ({ item }: { item: DataOptionsType }) => {
-    const { label } = item
+    const { key, label, Icon, color } = item
 
     const handleOption = () => {
       bottomSheetRef.current?.close()
-      if (label === 'Delete') {
+      if (key === 'delete') {
         return onConfirm()
       }
 
@@ -87,11 +99,14 @@ const TaskCard = (props: Props) => {
 
     return (
       <TouchableOpacity
-        key={label}
+        key={key}
         activeOpacity={0.8}
-        style={styles.option}
+        style={[styles.option, { borderColor: color }]}
         onPress={handleOption}>
-        <Text>{label}</Text>
+        {Icon}
+        <Text fontWeight="500" color={color}>
+          {label}
+        </Text>
       </TouchableOpacity>
     )
   }
@@ -112,29 +127,35 @@ const TaskCard = (props: Props) => {
       activeOpacity={0.8}
       onPress={handleOptions}
       style={styles.container}>
-      <Text size="s" fontWeight="500" color={colorRange.gray[700]}>
-        {formatTime(startTime)}
-      </Text>
-      <IconTask colorIcon={colorIcon} typeIcon={typeIcon} />
-      <View style={styles.content}>
-        <Row gap={'xs'}>
-          <Text size="s" fontWeight="500" color={colorRange.gray[700]}>
-            {periodTime(startTime, endTime)}
-          </Text>
-          {repeat !== 'once' && (
-            <IconRepeat size={iconSize.xs} color={colorRange.gray[700]} />
-          )}
-        </Row>
+      <Row gap="s" flex={1} alignItems="flex-start">
         <Text
-          flex={1}
-          fontWeight={isFinished ? '400' : '500'}
-          color={isFinished ? color.gray : color.black}
-          size="l"
-          ratio={ratio}
-          textDecorationLine={isFinished ? 'line-through' : 'none'}>
-          {title}
+          size="s"
+          fontWeight="500"
+          color={colorRange.gray[700]}
+          style={styles.time}>
+          {formatTime(startTime)}
         </Text>
-      </View>
+        <IconTask colorIcon={colorIcon} typeIcon={typeIcon} />
+        <View style={styles.content}>
+          <Row gap={'xs'}>
+            <Text size="s" fontWeight="500" color={colorRange.gray[700]}>
+              {periodTime(startTime, endTime)}
+            </Text>
+            {repeat !== 'once' && (
+              <IconRepeat size={iconSize.xs} color={colorRange.gray[700]} />
+            )}
+          </Row>
+          <Text
+            flex={1}
+            fontWeight={isFinished ? '400' : '500'}
+            color={isFinished ? color.gray : color.black}
+            size="l"
+            ratio={ratio}
+            textDecorationLine={isFinished ? 'line-through' : 'none'}>
+            {title}
+          </Text>
+        </View>
+      </Row>
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => onUpdateStatus(isFinished)}
@@ -180,20 +201,18 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     paddingLeft: space.m,
-    paddingRight: space.m,
-    alignItems: 'center',
-    gap: space.s,
     flex: 1
+  },
+  time: {
+    marginTop: space.xs
   },
   content: {
     flex: 1
   },
   containerTick: {
-    height: '100%',
-    width: 'auto',
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center'
+    alignSelf: 'flex-start',
+    paddingVertical: space.xs,
+    paddingHorizontal: space.m
   },
   tick: {
     height: iconSize.m,
@@ -206,10 +225,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   },
   option: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderRadius: space.xs,
     padding: space.s,
-    marginHorizontal: space.m
+    marginHorizontal: space.m,
+    gap: space.xs
   },
   BSList: {
     paddingTop: space.xs,
